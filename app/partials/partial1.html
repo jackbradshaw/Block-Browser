@@ -1,1 +1,39 @@
-<p>This is the partial for view 1.</p>
+
+      <div class="row">
+        <div class="col-md-12">	
+<div class="panel panel-primary">
+			  <!-- Default panel contents -->
+			  <div class="panel-heading">
+			  <ul class="pager">
+			<li class="previous"><a href="#/{{yesterday}}">&larr; Older</a></li>
+			<li class="h3">Blocks mined on {{date}}</li>
+		    <li class="next"><a href="#/{{tomorrow}}">Newer &rarr;</a></li>
+		</ul>
+		<form role="form">  
+			  <!--<div class="input-group">
+				<span class="input-group-btn">
+					<button class="btn btn-default" type="button">Filter</button>
+				</span>
+				<input type="text" class="form-control" placeholder="Filter by block id, block hash, transaction hash or address.">
+			</div>-->
+			</form>	
+		</div>		
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th>Height</th>
+					<th>Hash</th>
+					<th>Time</th>					
+				</th>
+			</thead>
+			<tbody>
+			<tr ng-repeat="block in blocks">
+				<td>{{block.height}}</a></td>
+				<td><a href="#/block/{{block.hash}}">{{block.hash}}</a></td>
+				<td>{{block.time | millisecondsToDate }}</td>				
+				</tr>	
+			</tbody>
+		</table>
+        </div>
+      </div>
+	</div>

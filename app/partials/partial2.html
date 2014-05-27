@@ -1,5 +1,86 @@
-<p>This is the partial for view 2.</p>
-<p>
-  Showing of 'interpolate' filter:
-  {{ 'Current version is v%VERSION%.' | interpolate }}
-</p>
+<div class="row">
+        <div class="col-md-12">	
+			<div class="panel panel-primary">
+			  <!-- Default panel contents -->
+			  <div class="panel-heading">
+			  <ul class="pager">
+			<li class="previous"><a href="#/block/{{block.prev_block}}">&larr; Previous Block</a></li>
+			<li class="h3">Block Information</li>
+		    <!--<li class="next"><a href="#">Next Block &rarr;</a></li>-->
+		</ul></div>		  
+
+			  <!-- List group -->
+			  <ul class="list-group">				
+				<li class="list-group-item"><strong>Hash:</strong> {{block.hash}}</li>
+				<li class="list-group-item"><strong>Previous block: </strong><a href="#/block/{{block.prev_block}}">{{block.prev_block}}</a></li>
+				<li class="list-group-item"><strong>Time: </strong>{{block.time}}</li>
+				<li class="list-group-item"><strong>Transactions:</strong> {{block.n_tx}}</li>				
+				<li class="list-group-item"><strong>Size: </strong>{{block.size}}</li>
+				<li class="list-group-item"><strong>Merkle root:</strong> {{block.mrkl_root}}</li>
+				<li class="list-group-item"><strong>Nonce: </strong>{{block.nonce}}</li>
+			  </ul>
+		    </div>
+		  </div>		 
+		</div>
+		
+			<div class="panel panel-primary">
+			<div class="panel-heading text-center"><span class="h3">Transactions ({{block.n_tx}})</span></div>	  
+
+				<div class="panel-group transactions-panel-group" id="accordion">
+				  <div class="panel panel-default" ng-repeat="transaction in block.tx">
+					<div class="panel-heading">
+					  <h4 class="panel-title">
+						<a data-toggle="collapse" data-parent="#accordion" href="#collapse_{{transaction.hash}}" onclick="return false;">
+							{{transaction.hash}}  
+						</a>
+						<!--<span class="badge pull-right">5.00100</span>-->
+					  </h4>
+					</div>
+					<div id="collapse_{{transaction.hash}}" class="panel-collapse collapse">
+					  <div class="panel-body">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>From</th>
+									<th>To</th>
+									<!--<th>Amount</th>
+									<th>Fee</th>-->						
+								</th>
+							</thead>
+							<tbody>					
+								<tr>
+									<td>
+										<ul ng-if="transaction.inputs[0].prev_out">
+											<li ng-repeat="input in transaction.inputs">												
+												{{input.prev_out.addr}} ({{input.prev_out.value}})
+											</li>
+										</ul>
+										<span ng-if="!transaction.inputs[0].prev_out">
+											Generation
+										</span>
+									</td>
+									<td>
+										<ul>
+											<li ng-repeat="output in transaction.out">
+												{{output.addr}} ({{output.value}})
+											</li>
+										</ul>
+									</td>
+									<!--
+									<td>{{transaction.in.addr}}</td>
+									<td>0.001</td>	
+									-->
+								</tr>
+							</tbody>
+						</table>
+					  </div>			 
+					</div>
+				  </div>
+		  
+					</tbody>
+				</table>
+			  </div>			 
+			</div>
+		  </div>
+		</div>
+		</div>	  
