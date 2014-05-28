@@ -50,19 +50,19 @@
 							<tbody>					
 								<tr>
 									<td>
-										<ul ng-if="transaction.inputs[0].prev_out">
-											<li ng-repeat="input in transaction.inputs">												
-												{{input.prev_out.addr}} ({{input.prev_out.value}})
+										<ul ng-if="!(transaction.in[0].prev_out.hash == 0)">
+											<li ng-repeat="input in transaction.in">												
+												{{input.prev_out.hash}} <!--({{input.prev_out.value}})-->
 											</li>
 										</ul>
-										<span ng-if="!transaction.inputs[0].prev_out">
+										<span ng-if="transaction.in[0].prev_out.hash == 0">
 											Generation
 										</span>
 									</td>
 									<td>
 										<ul>
 											<li ng-repeat="output in transaction.out">
-												{{output.addr}} ({{output.value}})
+												{{ output.scriptPubKey | scriptPubKeyHash }} ({{output.value}})
 											</li>
 										</ul>
 									</td>

@@ -5,34 +5,23 @@
 angular.module('blockBrowser.controllers', [])
   .controller('BlockDetail', ['$scope', '$routeParams' ,'Blocks', function($scope, $routeParams, Blocks) {
 	
-	var block =  Blocks.get({block_hash: $routeParams.block_hash});
+	var block =  Blocks.resource.get({block_hash: $routeParams.block_hash}, function(data)
+	{
+		console.log(data.tx[0].in[0].prev_out.hash == 0);
+	});
 	
 	$scope.block = block;
 	
-	console.log(block);
+	console.log(block);	
   }])
-  .controller('BlockList', ['$scope','$routeParams', 'Blocks', function($scope, $routeParams, Blocks) {
+  .controller('BlockList', ['$scope','$routeParams', 'Blocks', function($scope, $routeParams, Blocks) {				
 		
-		if($routeParams.date)			
-			var d = new Date(parseInt($routeParams.date))
+		if($routeParams.block_hash)	
+			var promise = Blocks.blockChain(10, $routeParams.block_hash);
 		else
-			d = new Date();
-			
-		var time_in_milliseconds = d.getTime();
+			promise =  Blocks.blockChain(10);			
 		
-		var yesterday = new Date(), tomorrow = new Date();
-		yesterday.setDate(d.getDate() - 1);
-		tomorrow.setDate(d.getDate() + 1);
-		
-		$scope.yesterday = yesterday.getTime();
-		$scope.date = d.toDateString();
-		$scope.tomorrow = tomorrow.getTime();
-
-		var queryResult = Blocks.query({time_in_milliseconds: time_in_milliseconds}, function(result)
-		{
-			$scope.blocks = result.blocks;	
-			console.log($scope.blocks);			
-		});	
+		promise.then(function(result) { $scope.blocks = result });
 	 }])
 	.controller('SearchController', ['$scope', '$location', function($scope, $location) {
 		$scope.submit = function()

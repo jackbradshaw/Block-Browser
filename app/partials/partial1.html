@@ -5,8 +5,8 @@
 			  <!-- Default panel contents -->
 			  <div class="panel-heading">
 			  <ul class="pager">
-			<li class="previous"><a href="#/{{yesterday}}">&larr; Older</a></li>
-			<li class="h3">Blocks mined on {{date}}</li>
+			<li class="previous"><a href="#/{{blocks.slice(-1)[0].prev_block}}">&larr; Older</a></li>
+			<li class="h3">Blocks chain</li>
 		    <li class="next"><a href="#/{{tomorrow}}">Newer &rarr;</a></li>
 		</ul>
 		<form role="form">  

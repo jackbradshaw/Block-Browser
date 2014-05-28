@@ -10,4 +10,9 @@ angular.module('blockBrowser.filters', []).
 		//console.log(date);
         return date.getHours() + ':' + date.getMinutes() +  ':' + date.getSeconds();
     };
+  })
+  .filter('scriptPubKeyHash', function() {
+	return function(pubkey)	{
+		return pubkey.split(' ')[2];
+	}
   });
