@@ -3,14 +3,18 @@
 /* Controllers */
 
 angular.module('blockBrowser.controllers', [])
-  .controller('BlockDetail', ['$scope', '$routeParams' ,'Blocks', function($scope, $routeParams, Blocks) {
+  .controller('BlockDetail', ['$scope', '$routeParams' ,'Blocks', function($scope, $routeParams, Blocks) {	
 	
-	var block =  Blocks.resource.get({block_hash: $routeParams.block_hash}, function(data)
-	{
-		console.log(data.tx[0].in[0].prev_out.hash == 0);
-	});
-	
-	$scope.block = block;
+  	var block = Blocks.block($routeParams.block_hash);
+
+	$scope.blockNotFound = false;
+
+	block.then( 
+		//block found
+		function(result) { console.log(result); $scope.block =  result.data; },
+		//block not found 
+		function(reason) { $scope.blockNotFound = true }
+	);
 	
 	console.log(block);	
   }])
@@ -21,11 +25,16 @@ angular.module('blockBrowser.controllers', [])
 		else
 			promise =  Blocks.blockChain(10);			
 		
-		promise.then(function(result) { $scope.blocks = result });
+		promise.then(function(result) { console.log(result); $scope.blocks =  result; });	
+	
 	 }])
-	.controller('SearchController', ['$scope', '$location', function($scope, $location) {
+	.controller('SearchController', ['$scope', '$location', 'Blocks', function($scope, $location, Blocks) {
 		$scope.submit = function()
 		{
-			$location.path('/block/' + $scope.searchInput);
+			var hash = Blocks.getBlockHash($scope.searchInput);
+
+			hash.then(function(result) { $location.path('/block/' + result); });	
+
+			$scope.searchInput = "";		
 		}			
 	}]);

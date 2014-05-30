@@ -1,10 +1,15 @@
-<div class="row">
+
+<div class="row" ng-if="blockNotFound">
+	<div class="alert alert-danger">Block not found.</div>
+</div>
+
+	<div class="row" ng-if="block != null">
         <div class="col-md-12">	
 			<div class="panel panel-primary">
 			  <!-- Default panel contents -->
 			  <div class="panel-heading">
 			  <ul class="pager">
-			<li class="previous"><a href="#/block/{{block.prev_block}}">&larr; Previous Block</a></li>
+			<li ng-if="block.prev_block != 0" class="previous"><a href="#/block/{{block.prev_block}}">&larr; Previous Block</a></li>
 			<li class="h3">Block Information</li>
 		    <!--<li class="next"><a href="#">Next Block &rarr;</a></li>-->
 		</ul></div>		  
@@ -12,7 +17,7 @@
 			  <!-- List group -->
 			  <ul class="list-group">				
 				<li class="list-group-item"><strong>Hash:</strong> {{block.hash}}</li>
-				<li class="list-group-item"><strong>Previous block: </strong><a href="#/block/{{block.prev_block}}">{{block.prev_block}}</a></li>
+				<li class="list-group-item"><strong>Previous block: </strong><a ng-if="block.prev_block != 0" href="#/block/{{block.prev_block}}">{{block.prev_block}}</a></li>
 				<li class="list-group-item"><strong>Time: </strong>{{block.time}}</li>
 				<li class="list-group-item"><strong>Transactions:</strong> {{block.n_tx}}</li>				
 				<li class="list-group-item"><strong>Size: </strong>{{block.size}}</li>
@@ -23,6 +28,8 @@
 		  </div>		 
 		</div>
 		
+		<div class="row" ng-if="block != null">
+			<div class="col-md-12">	
 			<div class="panel panel-primary">
 			<div class="panel-heading text-center"><span class="h3">Transactions ({{block.n_tx}})</span></div>	  
 
@@ -83,4 +90,6 @@
 			</div>
 		  </div>
 		</div>
-		</div>	  
+		</div>	
+		</div>	 
+		</div>	 
