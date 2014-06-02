@@ -17,6 +17,15 @@ blockBrowserServices.factory('Blocks', ['$resource', '$http', '$q',
 			//   query: {method:'GET', url:'/blocks/:time_in_milliseconds?format=json&cors=true'}
 			// });	
 
+
+			/**
+			* Calucaltes the merkle tree for the block on the server
+			**/
+			this.merkleTree = function(block)
+			{
+				return $http.post('/merkleTree/', block);
+			}
+
 			/**
 			*	Returns a Promise of a block hash for the given search term
 			**/
