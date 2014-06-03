@@ -1,0 +1,13 @@
+{
+"nodes":
+	[
+		{"hash" : "A", "value" : 10, "prev_out" : [ {"hash" : "B", "n" : 1}, {"hash" : "C", "n" : 4 } ] },
+		{"hash" : "B", "value" : 14, "prev_out" : []},
+		{"hash" : "C", "value" : 19, "prev_out" : []}
+	],
+"links" :
+	[
+		{ "id" : "L1", "source": 1, "target": 0, "weight" : 13 },
+		{ "id" : "L2", "source": 2, "target": 0, "weight" : 24 }
+	]
+}

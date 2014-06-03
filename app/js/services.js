@@ -163,3 +163,9 @@ blockBrowserServices.factory('Blocks', ['$resource', '$http', '$q',
 	}	
 }]);
 
+
+// blockBrowserServices.factory('Transactions', ['$resource', '$http', '$q',
+// 	function($resource, $http, $q) {
+		
+// 	}
+// }]);

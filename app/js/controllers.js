@@ -41,6 +41,12 @@ controllers
 		}			
 	}]);
 
+
+	//Transaction History:
+	controllers.controller('TransactionHistory', ['$scope', '$routeParams' ,'Blocks', function ($scope, $routeParams, Blocks) {
+
+	}]);
+
 	// D3 Visualisation:
 	controllers.controller('D3Visual', ['$scope', '$routeParams' ,'Blocks', function ($scope, $routeParams, Blocks) {
 		  

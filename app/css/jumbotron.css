@@ -24,3 +24,15 @@ path.link {
   stroke: #ccc;
   stroke-width: 1.5px;
 }
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+  z-index: 100;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+  z-index: 0;
+}
