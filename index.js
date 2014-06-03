@@ -14,6 +14,7 @@ var app = connect()
 			
 	//app.use('/blocks', proxy(url.parse('https://blockchain.info/blocks')));
 	app.use('/rawblock', proxy(url.parse('http://blockexplorer.com/rawblock')));
+	app.use('/rawtx', proxy(url.parse('http://blockexplorer.com/rawtx')));
 	app.use('/q', proxy(url.parse('http://blockexplorer.com/q')));
 	app.use(connect.static('.'));
 

@@ -205,7 +205,7 @@ directives.
 	});
 
 directives.
-	directive('transactionHistory', function () {
+	directive('transactionHistory', ['Transactions', function (Transactions) {
 
 		var width = 960,
     		height = 500;
@@ -213,8 +213,7 @@ directives.
 		 return {
 		    restrict: 'E',
 		    scope: {
-		        val: '=',
-		        grouped: '='
+		        val: '=',		       
 		    },  
 			link: function (scope, element, attrs) {			
 
@@ -222,8 +221,8 @@ directives.
 				var graph;
 
 				var force = d3.layout.force()
-				    .charge(-120)
-				    .linkDistance(function(d) { return d.weight * 10 })
+				    //.charge(-120)
+				    //.linkDistance(function(d) { return d.weight * 10 })
 				    .size([width, height]);
 
 				var svg = d3.select("body").append("svg")
@@ -232,16 +231,28 @@ directives.
 
 				scope.$watch('val', function (newVal, oldVal) {  
 
-					d3.json("./transactionExample.json", function(data) {
-						graph = data;
-						update();		     				
-					});
-
+					// d3.json("./transactionExample.json", function(data) {
+					// 	graph = data;
+					// 	update();		     				
+					// });
+					//console.dir(newVal);
+					if(newVal != null)
+					{
+						//console.dir(newVal);
+						graph = 
+							{
+								nodes : [newVal],
+								links : []
+							};
+							console.dir(graph);
+						update();
+					}
 					function update()
 					{
 						force
 						    .nodes(graph.nodes)
 						    .links(graph.links)
+						    .charge(-30)
 						    .start();
 
 						var link = svg.selectAll(".link")
@@ -261,7 +272,7 @@ directives.
 						//Enter
 						node.enter().append("circle")
 						    .attr("class", "node")
-						    .attr("r", function(d) { return d.value;})
+						    .attr("r", 10)
 						    .style("fill", function(d) { return color(d.group); });					   
 						   
 						//Update
@@ -283,20 +294,40 @@ directives.
 					
 					function click(d)
 					{
-						//console.dir(d);
-						//var clickedNode = graph.nodes[d.index];
+						// //console.dir(d);
+						// //var clickedNode = graph.nodes[d.index];
+						// var clickedNode = graph.nodes[d.index];
+						// console.dir(clickedNode);
+						// var newNode = {"hash" : "D", "value" : 19, "prev_out" : []};
+
+						// graph.nodes.push(newNode);
+						// graph.links.push({ "id" : "L3", "source": clickedNode, "target": newNode, "weight" : 13 });
+
+						// console.dir(graph.links);
+						// update();
+						console.dir(d);
+						
 						var clickedNode = graph.nodes[d.index];
-						console.dir(clickedNode);
-						var newNode = {"hash" : "D", "value" : 19, "prev_out" : []};
 
-						graph.nodes.push(newNode);
-						graph.links.push({ "id" : "L3", "source": clickedNode, "target": newNode, "weight" : 13 });
+						if(!clickedNode.clicked)
+						{
+							clickedNode.clicked = true;							
 
-						console.dir(graph.links);
-						update();
+							var transactionPromises = Transactions.getPreviousTransactions(d);
+
+							transactionPromises.then(function(result) {
+								result.forEach( function(result)
+								{
+									var newNode = result.transaction;
+									graph.nodes.push(newNode);
+									graph.links.push({ "source": clickedNode, "target": newNode, "weight" : newNode.out[result.index].value });
+								});
+								update();
+							})
+						}
 					}	
 					
 				});
 			}
 		}	
-	});
+	}]);

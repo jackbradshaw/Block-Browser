@@ -43,8 +43,16 @@ controllers
 
 
 	//Transaction History:
-	controllers.controller('TransactionHistory', ['$scope', '$routeParams' ,'Blocks', function ($scope, $routeParams, Blocks) {
+	controllers.controller('TransactionHistory', ['$scope', '$routeParams' ,'Transactions', function ($scope, $routeParams, Transactions) {
 
+		var transactionId = $routeParams.transactionId;
+
+		Transactions.getTransaction(transactionId).then(function(result)
+		{
+			//console.dir(data);
+			$scope.transaction = result.data;
+		});
+		
 	}]);
 
 	// D3 Visualisation:

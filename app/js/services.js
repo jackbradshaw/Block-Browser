@@ -164,8 +164,44 @@ blockBrowserServices.factory('Blocks', ['$resource', '$http', '$q',
 }]);
 
 
-// blockBrowserServices.factory('Transactions', ['$resource', '$http', '$q',
-// 	function($resource, $http, $q) {
+blockBrowserServices.factory('Transactions', ['$resource', '$http', '$q',
+	function($resource, $http, $q)
+	{
+		return new TranscactionService();
 		
-// 	}
-// }]);
+		function TranscactionService()
+		{
+			var self = this;
+
+			self.getTransaction = function(transactionId)
+			{
+				return $http.get('/rawtx/' + transactionId);
+			}
+
+			self.getPreviousTransactions = function(transaction)
+			{
+				var promises = [];
+				for(var i in transaction.in)
+				{					
+					var input = transaction.in[i].prev_out;
+					pushTransaction(input, promises);					
+				}
+				return $q.all(promises);
+			}
+
+			function pushTransaction(input, promises)
+			{
+				console.dir(input);
+				var promise = self.getTransaction(input.hash);
+				promises.push(promise.then(function(result)
+				{
+					var obj = 
+					{
+						transaction : result.data,
+						index : input.n 
+					};
+					return obj;
+				}));
+			}
+		}
+	}]);
