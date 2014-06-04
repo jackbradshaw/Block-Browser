@@ -49,8 +49,8 @@ controllers
 
 		Transactions.getTransaction(transactionId).then(function(result)
 		{
-			//console.dir(data);
-			$scope.transaction = result.data;
+			console.dir(result);
+			$scope.transaction = result;
 		});
 		
 	}]);

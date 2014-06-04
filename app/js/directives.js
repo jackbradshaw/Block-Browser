@@ -207,8 +207,9 @@ directives.
 directives.
 	directive('transactionHistory', ['Transactions', function (Transactions) {
 
-		var width = 960,
-    		height = 500;
+		var nodeLookup = {};
+		var width = 1000,
+    		height = 1000;
 
 		 return {
 		    restrict: 'E',
@@ -225,9 +226,41 @@ directives.
 				    //.linkDistance(function(d) { return d.weight * 10 })
 				    .size([width, height]);
 
-				var svg = d3.select("body").append("svg")
-				    .attr("width", width)
-				    .attr("height", height);
+				var svg = d3.select("body").append("svg");
+
+				svg.attr("id", "playgraph")
+	             	//better to keep the viewBox dimensions with variables
+	            	.attr("viewBox", "0 0 " + width + " " + height )
+	            	.attr("preserveAspectRatio", "xMidYMid meet");
+				   
+
+  				svg.append("svg:defs").selectAll("marker")
+				    .data(["end"])      // Different link/path types can be defined here
+				  .enter().append("svg:marker")    // This section adds in the arrows	
+				    .attr("id", String)
+				    .attr("viewBox", "0 -5 10 10")
+				    .attr("refX", 5)
+				    .attr("markerWidth", 6)
+				    .attr("markerHeight", 6)
+				    .attr("orient", "auto")
+				  .append("svg:path")
+				    .attr("d", "M0,-5L10,0L0,5")
+				    .attr("fill","context-stroke")
+				    .attr("stroke", "context-stroke");			
+
+   				var vis = svg.append("g")
+    				.call(d3.behavior.zoom().on("zoom", zoom))
+  					.append("g")  					
+  					;	
+
+  				vis.append("rect")
+    				.attr("class", "overlay")//.attr("preserveAspectRatio", "xMidYMid meet");
+    				.attr("width", "100%")
+   					.attr("height", "100%");
+
+				function zoom() {
+  					vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+				}
 
 				scope.$watch('val', function (newVal, oldVal) {  
 
@@ -238,7 +271,7 @@ directives.
 					//console.dir(newVal);
 					if(newVal != null)
 					{
-						//console.dir(newVal);
+						newVal.start = true;
 						graph = 
 							{
 								nodes : [newVal],
@@ -252,31 +285,35 @@ directives.
 						force
 						    .nodes(graph.nodes)
 						    .links(graph.links)
-						    .charge(-30)
+						    .charge(nodeCharge)
 						    .start();
+					
+				        
+						var link = vis.selectAll(".link")
+						    .data(graph.links, linkKeyFunction)						
 
-						var link = svg.selectAll(".link")
-						    .data(graph.links);//, function(d) { return d.id; });
+						link.enter().insert("path", ".node")
+						    .attr("class", "link")						     
+						    .style("stroke-width", function(d) { return d.value; })
+						    .attr("marker-mid", "url(#end)");
 
-						link.enter().insert("line", ".node")
-						    .attr("class", "link")
-						    .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+						  // link.append("line")
+						  //    .attr("marker-mid", "url(#end)");
 
-						// link.append("line")
-						//     .attr("class", "link")
-						//     .style("stroke-width", function(d) { return Math.sqrt(d.value); });   
-
-					    var node = svg.selectAll(".node")					    
-						    .data(graph.nodes);//, function(d) { return d.hash; });
-
+					    var node = vis.selectAll(".node")					    
+						    .data(graph.nodes, nodeKeyFunction);
+								
 						//Enter
-						node.enter().append("circle")
+						node.enter().append("circle")							
 						    .attr("class", "node")
-						    .attr("r", 10)
-						    .style("fill", function(d) { return color(d.group); });					   
+						    .attr("r", nodeRadius);
+						    //
+						    				   
 						   
 						//Update
 						node.call(force.drag)
+							.style("fill", nodeColour )
+							.style("stroke", nodeStroke)
 						    .on('click', click);					   
 
 
@@ -288,23 +325,128 @@ directives.
 
 							node.attr("cx", function(d) { return d.x; })
 						    	.attr("cy", function(d) { return d.y; });
+
+
+						    	link.attr("d", function(d) {
+								        var mx = d.source.x + (d.target.x - d.source.x )/ 2,
+								            my = d.source.y + (d.target.y - d.source.y) /2;
+								          
+								        return "M" + 
+								            d.source.x + "," + 
+								            d.source.y + "L" + 
+								            mx + "," + my  + "L" +
+								            d.target.x + "," + 
+								            d.target.y;
+								    });
+
+
 						}); 
 					}	
 
-					
-					function click(d)
+					function linkKeyFunction(d)
 					{
-						// //console.dir(d);
-						// //var clickedNode = graph.nodes[d.index];
-						// var clickedNode = graph.nodes[d.index];
-						// console.dir(clickedNode);
-						// var newNode = {"hash" : "D", "value" : 19, "prev_out" : []};
+						return d.source.hash.toString() + d.target.hash.toString();
+					}
 
-						// graph.nodes.push(newNode);
-						// graph.links.push({ "id" : "L3", "source": clickedNode, "target": newNode, "weight" : 13 });
+					function nodeKeyFunction(d)
+					{
+						return d.hash;
+					}
 
-						// console.dir(graph.links);
-						// update();
+					function nodeCharge(d)
+					{
+						//if(d.danglingOut) return -30;
+						return level(d.value).charge * 10
+					}
+
+					function nodeStroke(d)
+					{
+						if(d.danglingOut) return level(d.value).colour;
+						return null;
+					}
+
+					function nodeRadius(d)
+					{
+						//if(d.danglingOut) return 5;
+						var radius = level(d.value).radius; return radius;
+					}
+
+					function nodeColour(d)
+					{
+						if(d.found) return "red";
+						if(d.danglingOut) return "white";
+						if(d.start) return "red";
+						if(d.in[0].prev_out.hash == 0) return "black";						
+						return level(d.value).colour;
+					}	
+
+					function level(value)
+					{
+						var levels = 
+						[
+							{ threshold : 0.1, colour : '#e0f3db', radius : 10, charge : -30},
+							{ threshold : 0.5, colour : '#ccebc5', radius : 15, charge : -40},
+							{ threshold : 1, colour : '#a8ddb5', radius : 20, charge : -50},
+							{ threshold : 5, colour : '#7bccc4', radius : 25, charge : -100},
+							{ threshold : 10, colour : '#4eb3d3', radius : 30, charge : -150},
+							{ threshold : 50, colour : '#2b8cbe', radius : 35, charge : -200},
+							{ threshold : 100, colour : '#08589e', radius : 40, charge : -250},
+							{ threshold : 500, colour : '#084081', radius : 45, charge : -300}
+						];
+
+						for(var i in levels)
+						{
+							if(value < levels[i].threshold) return levels[i];
+						}
+						return levels.splice(-1)[0];						
+					}
+
+					function RemoveDanglingOut(node, index)
+					{
+						var hashToFind = danglingOutKey(node, index);
+						//Find out node in node array
+						var nodeIndex;
+						for(var i in graph.nodes)
+						{
+							if(graph.nodes[i].hash == hashToFind)
+							{
+								nodeIndex = i;
+								break;
+							}
+						}
+
+						//alert(graph.nodes);
+						console.log('node index: ' + nodeIndex);
+						if(nodeIndex != null)
+						{
+							graph.nodes.splice(nodeIndex, 1);
+						}
+
+						//Find connecting in edge in edge array
+						var linkIndex;
+						for(var i in graph.links)
+						{
+							if(graph.links[i].source.hash == node.hash)
+							{
+								linkIndex = i;
+								break;
+							}
+						}
+						if(linkIndex != null)
+						{
+							graph.links.splice(linkIndex, 1); 
+						}		
+
+						//alert();				
+					}		
+
+					function danglingOutKey(node, index)
+					{
+						return node.hash + index.toString();
+					}	
+
+					function click(d)
+					{						
 						console.dir(d);
 						
 						var clickedNode = graph.nodes[d.index];
@@ -315,18 +457,60 @@ directives.
 
 							var transactionPromises = Transactions.getPreviousTransactions(d);
 
-							transactionPromises.then(function(result) {
-								result.forEach( function(result)
+							transactionPromises.then(function(results) {
+								results.forEach( function(result)
 								{
-									var newNode = result.transaction;
-									graph.nodes.push(newNode);
-									graph.links.push({ "source": clickedNode, "target": newNode, "weight" : newNode.out[result.index].value });
+									var transaction = result.transaction;
+									var outIndex = result.index;
+
+									//Check transcation not already in graph by using dictionary
+									//if it is, will need to remove dangling out and add link	
+									var existingNode = nodeLookup[transaction.hash];
+									
+									if(existingNode != null)
+									{
+										console.log('existing', existingNode);
+										existingNode.found = true;
+										RemoveDanglingOut(existingNode, outIndex);
+
+										//Add in new link:
+										graph.links.push({ "source": existingNode, "target": clickedNode, "weight" : existingNode.out[result.index].value });
+
+									}
+									else
+									{	
+										//The transaction is new:	
+										var rnd =Math.random();
+										var newNode = transaction;
+
+										//Add dangling outs:
+										transaction.out.forEach(function (out, index)
+										{
+											if(index != outIndex)
+											{
+												var outNode = { hash: danglingOutKey(newNode, index), danglingOut : true, value : out.value };
+												graph.nodes.push(outNode);
+												graph.links.push({ "source": newNode, "target": outNode, "weight" : out.value });
+											}
+										});
+
+									
+										//Set the intial position of the node to be the position of its parent:
+										newNode.x = clickedNode.x + rnd*50;
+										newNode.y = clickedNode.y + rnd*50;
+										//console.log('newnode x : ',newNode.x);
+
+										graph.nodes.push(newNode);
+										nodeLookup[newNode.hash] = newNode;
+										graph.links.push({ "source": newNode, "target": clickedNode, "weight" : newNode.out[result.index].value });
+
+									}
+									//update();
 								});
 								update();
 							})
 						}
-					}	
-					
+					}						
 				});
 			}
 		}	

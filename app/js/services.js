@@ -175,7 +175,19 @@ blockBrowserServices.factory('Transactions', ['$resource', '$http', '$q',
 
 			self.getTransaction = function(transactionId)
 			{
-				return $http.get('/rawtx/' + transactionId);
+				return $http.get('/rawtx/' + transactionId).then(function(result) {
+					var transaction = result.data;
+					//Sum outs to get transaction value:
+					transaction.value = 0;
+					for(var i in transaction.out)
+					{
+						//console.log(i);
+						transaction.value += parseFloat(transaction.out[i].value);
+					}
+					console.log(transaction.value);
+
+					return transaction;
+				})
 			}
 
 			self.getPreviousTransactions = function(transaction)
@@ -194,10 +206,10 @@ blockBrowserServices.factory('Transactions', ['$resource', '$http', '$q',
 				console.dir(input);
 				var promise = self.getTransaction(input.hash);
 				promises.push(promise.then(function(result)
-				{
+				{	
 					var obj = 
 					{
-						transaction : result.data,
+						transaction : result,
 						index : input.n 
 					};
 					return obj;

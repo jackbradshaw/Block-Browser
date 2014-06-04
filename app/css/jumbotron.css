@@ -19,11 +19,7 @@ body {
   font-size: 11px;
 }
 
-path.link {
-  fill: none;
-  stroke: #ccc;
-  stroke-width: 1.5px;
-}
+
 
 .node {
   stroke: #fff;
@@ -32,7 +28,14 @@ path.link {
 }
 
 .link {
-  stroke: #999;
-  stroke-opacity: .6;
+  stroke: #b8b8b8;
+  /*stroke-opacity: .6;*/
+  stroke-width: 1.5px;
   z-index: 0;
+}
+
+.overlay {
+   border: 1px solid black;
+  fill: none;
+  pointer-events: all;
 }
