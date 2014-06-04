@@ -12,8 +12,13 @@ body {
   cursor: pointer;
   fill: #fff;
   stroke: steelblue;
+  opacity: 0.8;
   stroke-width: 1.5px;
 }
+
+.clickable circle {
+    stroke: "red";
+  }
 
 .node text {
   font-size: 11px;
@@ -37,5 +42,5 @@ body {
 .overlay {
    border: 1px solid black;
   fill: none;
-  pointer-events: all;
+  /*pointer-events: all;*/
 }

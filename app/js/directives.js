@@ -226,7 +226,7 @@ directives.
 				    //.linkDistance(function(d) { return d.weight * 10 })
 				    .size([width, height]);
 
-				var svg = d3.select("body").append("svg");
+				var svg = d3.select(element[0]).append("svg");
 
 				svg.attr("id", "playgraph")
 	             	//better to keep the viewBox dimensions with variables
@@ -246,17 +246,11 @@ directives.
 				  .append("svg:path")
 				    .attr("d", "M0,-5L10,0L0,5")
 				    .attr("fill","context-stroke")
-				    .attr("stroke", "context-stroke");			
+				    .attr("stroke", "context-stroke");		
 
-   				var vis = svg.append("g")
-    				.call(d3.behavior.zoom().on("zoom", zoom))
-  					.append("g")  					
-  					;	
+				svg.call(d3.behavior.zoom().on("zoom", zoom));	
 
-  				vis.append("rect")
-    				.attr("class", "overlay")//.attr("preserveAspectRatio", "xMidYMid meet");
-    				.attr("width", "100%")
-   					.attr("height", "100%");
+   				var vis = svg.append("g");
 
 				function zoom() {
   					vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
@@ -297,25 +291,29 @@ directives.
 						    .style("stroke-width", function(d) { return d.value; })
 						    .attr("marker-mid", "url(#end)");
 
-						  // link.append("line")
-						  //    .attr("marker-mid", "url(#end)");
+						link.exit().remove();
 
 					    var node = vis.selectAll(".node")					    
 						    .data(graph.nodes, nodeKeyFunction);
 								
 						//Enter
 						node.enter().append("circle")							
-						    .attr("class", "node")
+						    //.attr("class", "node")
 						    .attr("r", nodeRadius);
+						    //.attr("class", function(d) { return "node " + .clicked ? "clicked" : "clickable"; });
 						    //
 						    				   
 						   
 						//Update
-						node.call(force.drag)
+						//node.attr("class", function(d) {return d.clicked ? "clicked" : "clickable"});
+
+						node.attr("class", function(d) { return "node " + (d.clicked ? "clicked" : "clickable"); })
+							.call(force.drag)							
 							.style("fill", nodeColour )
 							.style("stroke", nodeStroke)
 						    .on('click', click);					   
 
+						node.exit().remove();
 
 						force.on("tick", function() {
 						    link.attr("x1", function(d) { return d.source.x; })
@@ -355,27 +353,25 @@ directives.
 
 					function nodeCharge(d)
 					{
-						//if(d.danglingOut) return -30;
-						return level(d.value).charge * 10
+						return level(d.value).charge;
 					}
 
 					function nodeStroke(d)
 					{
+						if(d.found) return "black";
 						if(d.danglingOut) return level(d.value).colour;
 						return null;
 					}
 
 					function nodeRadius(d)
-					{
-						//if(d.danglingOut) return 5;
+					{						
 						var radius = level(d.value).radius; return radius;
 					}
 
 					function nodeColour(d)
-					{
-						if(d.found) return "red";
+					{						
 						if(d.danglingOut) return "white";
-						if(d.start) return "red";
+						if(d.start) return "yellow";
 						if(d.in[0].prev_out.hash == 0) return "black";						
 						return level(d.value).colour;
 					}	
@@ -384,27 +380,58 @@ directives.
 					{
 						var levels = 
 						[
-							{ threshold : 0.1, colour : '#e0f3db', radius : 10, charge : -30},
-							{ threshold : 0.5, colour : '#ccebc5', radius : 15, charge : -40},
-							{ threshold : 1, colour : '#a8ddb5', radius : 20, charge : -50},
-							{ threshold : 5, colour : '#7bccc4', radius : 25, charge : -100},
-							{ threshold : 10, colour : '#4eb3d3', radius : 30, charge : -150},
-							{ threshold : 50, colour : '#2b8cbe', radius : 35, charge : -200},
-							{ threshold : 100, colour : '#08589e', radius : 40, charge : -250},
-							{ threshold : 500, colour : '#084081', radius : 45, charge : -300}
+							new Level(0, 0.1, '#e0f3db'),
+							new Level(0.1, 0.5, '#ccebc5'),
+							new Level(0.5, 1, '#a8ddb5'),
+							new Level(1.0, 5, '#7bccc4'),
+							new Level(5.0, 10, '#4eb3d3'),
+							new Level(10.0, 50, '#2b8cbe'),
+							new Level(50.0, 100, '#08589e'),
+							new Level(100.0, 500, '#084081') 
 						];
 
 						for(var i in levels)
 						{
-							if(value < levels[i].threshold) return levels[i];
+							if(value < levels[i].threshold) 
+							{
+								//console.log(levels[i]);
+								return levels[i];
+							}
 						}
-						return levels.splice(-1)[0];						
+						return levels.splice(-1)[0];
+
+						function radius(value, start, end)
+						{
+							console.log(value, start, end);
+							var rad = ((value - start)/(end - start))*40 + 10;
+							console.log('rad: ' + rad);
+							return rad;
+						}		
+
+
+						function Level(start, stop, colour)
+						{
+							var val = value;
+							if(value < start) val = start;
+							if(value > stop) val = stop;
+
+							var relativeSize = (val - start)/(stop - start);
+							
+							this.threshold = stop;
+
+							this.colour = colour;
+
+							this.radius = relativeSize * 40 + 10;							
+
+							this.charge = -(relativeSize * 250 + 50) * 10;							
+						}				
 					}
 
-					function RemoveDanglingOut(node, index)
+					function ReviseDanglingOut(node, index)
 					{
-						var hashToFind = danglingOutKey(node, index);
-						//Find out node in node array
+						var hashToFind = danglingOutKey(node);
+
+						//Find dangling out node in node array
 						var nodeIndex;
 						for(var i in graph.nodes)
 						{
@@ -414,35 +441,49 @@ directives.
 								break;
 							}
 						}
-
-						//alert(graph.nodes);
+						
 						console.log('node index: ' + nodeIndex);
 						if(nodeIndex != null)
 						{
-							graph.nodes.splice(nodeIndex, 1);
-						}
+							//Decresse the value of the the dangling output by the value being inculded in the new transaction:
+							var danglingOutNode = graph.nodes[nodeIndex];
+							console.log(danglingOutNode);
+							console.log('orignal value', danglingOutNode.value)
 
-						//Find connecting in edge in edge array
-						var linkIndex;
-						for(var i in graph.links)
-						{
-							if(graph.links[i].source.hash == node.hash)
+							console.log('found value' , node.out[index].value);
+							danglingOutNode.value -= node.out[index].value;
+
+							console.log('remaining value', danglingOutNode.value)
+
+							//If the value is dreased to zero, removed the dangling out all together:
+							if(danglingOutNode.value <= 0)
 							{
-								linkIndex = i;
-								break;
+								graph.nodes.splice(nodeIndex, 1);
+							
+
+								//Find connecting in edge in edge array
+								var linkIndex;
+								for(var i in graph.links)
+								{
+									if(graph.links[i].source.hash == node.hash)
+									{
+										linkIndex = i;
+										break;
+									}
+								}
+								if(linkIndex != null)
+								{
+									graph.links.splice(linkIndex, 1); 
+								}	
 							}
-						}
-						if(linkIndex != null)
-						{
-							graph.links.splice(linkIndex, 1); 
-						}		
+						}	
 
 						//alert();				
 					}		
 
-					function danglingOutKey(node, index)
+					function danglingOutKey(node)
 					{
-						return node.hash + index.toString();
+						return node.hash + 'o';
 					}	
 
 					function click(d)
@@ -471,7 +512,7 @@ directives.
 									{
 										console.log('existing', existingNode);
 										existingNode.found = true;
-										RemoveDanglingOut(existingNode, outIndex);
+										ReviseDanglingOut(existingNode, outIndex);
 
 										//Add in new link:
 										graph.links.push({ "source": existingNode, "target": clickedNode, "weight" : existingNode.out[result.index].value });
@@ -483,16 +524,23 @@ directives.
 										var rnd =Math.random();
 										var newNode = transaction;
 
+
+										var otherOutputTotal = 0;
 										//Add dangling outs:
 										transaction.out.forEach(function (out, index)
 										{
 											if(index != outIndex)
 											{
-												var outNode = { hash: danglingOutKey(newNode, index), danglingOut : true, value : out.value };
-												graph.nodes.push(outNode);
-												graph.links.push({ "source": newNode, "target": outNode, "weight" : out.value });
+												otherOutputTotal += parseFloat(out.value);
+												
 											}
 										});
+
+										console.log('otherOutputTotal',otherOutputTotal)
+
+										var outNode = { hash: danglingOutKey(newNode), danglingOut : true, value : otherOutputTotal };
+												graph.nodes.push(outNode);
+												graph.links.push({ "source": newNode, "target": outNode, "weight" : otherOutputTotal });
 
 									
 										//Set the intial position of the node to be the position of its parent:
