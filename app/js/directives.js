@@ -30,6 +30,8 @@ directives.
 		    },  
 			link: function (scope, element, attrs) {
 
+				$scope.displayInfo = false;
+
 				var m = [20, 120, 20, 120],
 				    w = 1280 - m[1] - m[3],
 				    h = 100 - m[0] - m[2],
@@ -211,22 +213,32 @@ directives.
 		var width = 1000,
     		height = 100;
 
+
 		 return {
 		    restrict: 'E',
 		    scope: {
-		        val: '=',		       
-		    },  
-			link: function (scope, element, attrs) {			
+		        val: '=',
+		        //transactionInfo: ''		       		       
+		    },
+		    templateUrl: 'partials/TransactionTraceTemplate.html'
+		    ,  
+			link: function (scope, element, attrs) 
+			{			
+				console.log('link');
 
 				var color = d3.scale.category20();
 				var graph;
+				scope.transactionInfo = { hash : 'test', value : 'value' };
+				
+				//scope.transaction = { hash: 'testhash' , value : 10 };
 
 				var force = d3.layout.force()
 				    //.charge(-120)
 				    //.linkDistance(function(d) { return d.weight * 10 })
 				    .size([width, height]);
 
-				var svg = d3.select(element[0]).append("svg");
+
+				var svg = d3.select(element.find('.transaction-container')[0]).append("svg");
 
 				svg.attr("id", "playgraph")
 					.attr("height", '100%')
@@ -250,37 +262,40 @@ directives.
 				    .attr("fill","context-stroke")
 				    .attr("stroke", "context-stroke");		
 
-				svg.call(d3.behavior.zoom().on("zoom", zoom));	
+				svg.call(d3.behavior.zoom().on("zoom", zoom)).on("dblclick.zoom", null);					
 
-   				var vis = svg.append("g");
+   				var vis = svg.append("g");   				
 
 				function zoom() {
   					vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 				}
 
 				scope.$watch('val', function (newVal, oldVal) {  
-
-					// d3.json("./transactionExample.json", function(data) {
-					// 	graph = data;
-					// 	update();		     				
-					// });
-					//console.dir(newVal);
+					
 					if(newVal != null)
 					{
-						newVal.start = true;
+						var orignalNode = newVal;
+						orignalNode.start = true;
+						orignalNode.fixed = true;
+						
 						graph = 
 							{
-								nodes : [newVal],
+								nodes : [orignalNode],
 								links : []
 							};
 							console.dir(graph);
+
+							addOutputNode(orignalNode);
 						update();
 					}
 					function update()
 					{
 						force
+							.alpha(1)
 						    .nodes(graph.nodes)
 						    .links(graph.links)
+						    .linkDistance(80)
+						    .linkStrength(0.5)
 						    .charge(nodeCharge)
 						    .start();
 					
@@ -301,20 +316,18 @@ directives.
 						//Enter
 						node.enter().append("circle")							
 						    //.attr("class", "node")
-						    .attr("r", nodeRadius);
-						    //.attr("class", function(d) { return "node " + .clicked ? "clicked" : "clickable"; });
-						    //
-						    				   
-						   
-						//Update
-						//node.attr("class", function(d) {return d.clicked ? "clicked" : "clickable"});
+						    .attr("r", nodeRadius);						    
 
 						node.attr("class", function(d) { return "node " + ((d.clicked || d.danglingOut || d.source) ? "" : "clickable"); })						 
-							.call(force.drag)							
+							 .call(force.drag)							
 							.style("fill", nodeColour )
 							.style("stroke", nodeStroke)
+						// .on('mouseover', nodeMouseOver)
+						   // .on('mouseout', nodeMouseOut)
 						    .on('click', click)
-
+						    .on('dblclick', doubleClick)
+						    ;
+						   
 						   		   
 
 						node.exit().remove();
@@ -333,7 +346,7 @@ directives.
 
 					    		var dist = Math.sqrt(Math.pow(d.target.x - d.source.x, 2) +  Math.pow(d.target.y - d.source.y, 2));
 					    		var r1 = nodeRadius(d.source), r2 = nodeRadius(d.target);
-					    		console.log('r1', r1,'r2',r2);
+					    		//console.log('r1', r1,'r2',r2);
 					    		var factor = (dist + r1 - r2)/ (2 * dist);
 
 					    		//Calulate the point on the path half way along the visible section:
@@ -380,7 +393,7 @@ directives.
 					function nodeColour(d)
 					{						
 						if(d.danglingOut) return "white";
-						if(d.start) return "yellow";
+						//if(d.start) return "yellow";
 						if(d.in[0].prev_out.hash == 0) return "black";						
 						return level(d.value).colour;
 					}	
@@ -432,7 +445,7 @@ directives.
 
 							this.radius = relativeSize * 40 + 10;							
 
-							this.charge = -(relativeSize * 250 + 50) * 10;							
+							this.charge = -800//(relativeSize * 200 + 200);							
 						}				
 					}
 
@@ -467,8 +480,7 @@ directives.
 							//If the value is dreased to zero, removed the dangling out all together:
 							if(danglingOutNode.value <= 0)
 							{
-								graph.nodes.splice(nodeIndex, 1);
-							
+								graph.nodes.splice(nodeIndex, 1);							
 
 								//Find connecting in edge in edge array
 								var linkIndex;
@@ -485,9 +497,7 @@ directives.
 									graph.links.splice(linkIndex, 1); 
 								}	
 							}
-						}	
-
-						//alert();				
+						}				
 					}		
 
 					function danglingOutKey(node)
@@ -496,7 +506,49 @@ directives.
 					}	
 
 					function click(d)
-					{						
+					{
+						scope.displayInfo = true;
+						scope.transactionInfo = { value : d.value };	
+						if(d.danglingOut)
+						{							
+							scope.transactionInfo.numberOfOutputs = d.numberOfOutputs;
+						}
+						else
+						{
+							scope.transactionInfo.hash = d.hash;
+						}
+
+						scope.$digest();	
+					}
+
+					function addOutputNode(node, exculdedIndex)
+					{
+						var otherOutputTotal = 0;
+						//Add dangling outs:
+						node.out.forEach(function (out, index)
+						{
+							if(exculdedIndex == null || index != exculdedIndex)
+							{
+								otherOutputTotal += parseFloat(out.value);												
+							}
+						});
+
+						console.log('otherOutputTotal',otherOutputTotal);						
+
+						var outNode = { hash: danglingOutKey(node), danglingOut : true, value : otherOutputTotal };
+
+						//Stores how many unbound transcations there are
+						outNode.numberOfOutputs = node.out.length;
+						if(exculdedIndex) --outNode.numberOfOutputs;
+
+						graph.nodes.push(outNode);
+						graph.links.push({ "source": node, "target": outNode, "weight" : otherOutputTotal });
+					}
+
+					function doubleClick(d)
+					{		
+						console.log('click', scope.transaction);
+
 						console.dir(d);
 						
 						var clickedNode = graph.nodes[d.index];
@@ -533,24 +585,7 @@ directives.
 										var rnd =Math.random();
 										var newNode = transaction;
 
-
-										var otherOutputTotal = 0;
-										//Add dangling outs:
-										transaction.out.forEach(function (out, index)
-										{
-											if(index != outIndex)
-											{
-												otherOutputTotal += parseFloat(out.value);
-												
-											}
-										});
-
-										console.log('otherOutputTotal',otherOutputTotal)
-
-										var outNode = { hash: danglingOutKey(newNode), danglingOut : true, value : otherOutputTotal };
-												graph.nodes.push(outNode);
-												graph.links.push({ "source": newNode, "target": outNode, "weight" : otherOutputTotal });
-
+										addOutputNode(newNode, outIndex);
 									
 										//Set the intial position of the node to be the position of its parent:
 										newNode.x = clickedNode.x + rnd*50;
@@ -567,6 +602,8 @@ directives.
 									//update();
 								});
 								update();
+
+								console.log('click end', scope.transaction);
 							})
 						}
 					}						

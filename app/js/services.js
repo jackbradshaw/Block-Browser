@@ -199,6 +199,7 @@ blockBrowserServices.factory('Transactions', ['$resource', '$http', '$q',
 					pushTransaction(input, promises);					
 				}
 				return $q.all(promises);
+				//return $q.all([]);
 			}
 
 			function pushTransaction(input, promises)

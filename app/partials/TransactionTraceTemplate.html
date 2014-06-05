@@ -1,0 +1,43 @@
+<div class="row">
+	<div class="col-md-12">	
+		<div class="panel panel-primary full-height-panel">
+			<div class="panel-heading text-center"><span class="h3">Transaction Trace</span></div>	  
+			<div class="resizable">
+				<div class="transaction-container"></div>			
+	 		</div>
+	  	</div>
+	</div> 
+	<div class="col-md-12">	
+		<div class="panel panel-primary full-height-panel">
+			<div class="panel-heading text-center">
+				<span ng-if="!displayInfo " class="h3">-</span>
+				<span ng-if="displayInfo && transactionInfo.hash != null" class="h3">Transaction Details</span>
+				<span ng-if="displayInfo && transactionInfo.hash == null" class="h3">Unbound Output Details</span>
+			</div>	  
+			<ul class="list-group">				
+				<li class="list-group-item">
+					<span ng-if="displayInfo">
+						<strong>Value: </strong>{{transactionInfo.value}}
+					</span>
+					<span ng-if="!displayInfo ">-</span>	
+				</li>
+				<li class="list-group-item">
+					<span ng-if="displayInfo">
+						<span ng-if="transactionInfo.hash != null">							
+							<strong>Hash:</strong> <a ng-href="#/transaction/{{transactionInfo.hash}}"> {{transactionInfo.hash}}</a>
+						</span>
+						<span ng-if="transactionInfo.hash == null">
+							<strong>Number of Outputs: </strong>{{transactionInfo.numberOfOutputs}}
+						</span>
+					</span>
+					<span ng-if="!displayInfo ">-</span>
+				</li>				
+			</ul>
+ 		</div>
+  	</div>
+</div>
+<script>
+ $(function() {
+    $( ".resizable" ).height(500).resizable({ handles: "s"});
+  });
+</script>
