@@ -48,8 +48,8 @@
 						<table class="table">
 							<thead>
 								<tr>
-									<th>From</th>
-									<th>To</th>
+									<th>From (Transaction : Index)</th>
+									<th>To (Address : Value)</th>
 									<!--<th>Amount</th>
 									<th>Fee</th>-->						
 								</th>
@@ -59,7 +59,7 @@
 									<td>
 										<ul ng-if="!(transaction.in[0].prev_out.hash == 0)">
 											<li ng-repeat="input in transaction.in">												
-												{{input.prev_out.hash}} <!--({{input.prev_out.value}})-->
+												{{input.prev_out.hash}} : {{input.prev_out.n}} <!--({{input.prev_out.value}})-->
 											</li>
 										</ul>
 										<span ng-if="transaction.in[0].prev_out.hash == 0">
@@ -69,7 +69,7 @@
 									<td>
 										<ul>
 											<li ng-repeat="output in transaction.out">
-												{{ output.scriptPubKey | scriptPubKeyHash }} ({{output.value}})
+												{{ output.scriptPubKey | scriptPubKeyHash }} : {{output.value}} 
 											</li>
 										</ul>
 									</td>
@@ -80,6 +80,7 @@
 								</tr>
 							</tbody>
 						</table>
+						<button type="button" ng-if="transaction.in[0].prev_out.hash != 0" class="btn btn-default" ng-click="visualiseButtonClick(transaction.hash)">Visualise</button>
 					  </div>			 
 					</div>
 				  </div>

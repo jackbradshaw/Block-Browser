@@ -8,16 +8,16 @@ body {
 	padding:10px;
 }
 
-.node circle {
-  cursor: pointer;
-  fill: #fff;
-  stroke: steelblue;
-  opacity: 0.8;
-  stroke-width: 1.5px;
+.node  {
+  
+  
+  
 }
 
-.clickable circle {
-    stroke: "red";
+.clickable:hover {   
+    cursor: pointer ;
+   
+    fill-opacity:0.9;
   }
 
 .node text {
@@ -43,4 +43,9 @@ body {
    border: 1px solid black;
   fill: none;
   /*pointer-events: all;*/
+}
+
+.full-height-panel
+{
+  height: 100%;
 }

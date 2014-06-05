@@ -209,7 +209,7 @@ directives.
 
 		var nodeLookup = {};
 		var width = 1000,
-    		height = 1000;
+    		height = 100;
 
 		 return {
 		    restrict: 'E',
@@ -229,9 +229,11 @@ directives.
 				var svg = d3.select(element[0]).append("svg");
 
 				svg.attr("id", "playgraph")
+					.attr("height", '100%')
 	             	//better to keep the viewBox dimensions with variables
 	            	.attr("viewBox", "0 0 " + width + " " + height )
-	            	.attr("preserveAspectRatio", "xMidYMid meet");
+	            	.attr("preserveAspectRatio", "xMidYMid meet")
+	            	;
 				   
 
   				svg.append("svg:defs").selectAll("marker")
@@ -294,8 +296,8 @@ directives.
 						link.exit().remove();
 
 					    var node = vis.selectAll(".node")					    
-						    .data(graph.nodes, nodeKeyFunction);
-								
+						    .data(graph.nodes, nodeKeyFunction)		
+						   
 						//Enter
 						node.enter().append("circle")							
 						    //.attr("class", "node")
@@ -307,11 +309,13 @@ directives.
 						//Update
 						//node.attr("class", function(d) {return d.clicked ? "clicked" : "clickable"});
 
-						node.attr("class", function(d) { return "node " + (d.clicked ? "clicked" : "clickable"); })
+						node.attr("class", function(d) { return "node " + ((d.clicked || d.danglingOut || d.source) ? "" : "clickable"); })						 
 							.call(force.drag)							
 							.style("fill", nodeColour )
 							.style("stroke", nodeStroke)
-						    .on('click', click);					   
+						    .on('click', click)
+
+						   		   
 
 						node.exit().remove();
 
@@ -325,19 +329,24 @@ directives.
 						    	.attr("cy", function(d) { return d.y; });
 
 
-						    	link.attr("d", function(d) {
-								        var mx = d.source.x + (d.target.x - d.source.x )/ 2,
-								            my = d.source.y + (d.target.y - d.source.y) /2;
-								          
-								        return "M" + 
-								            d.source.x + "," + 
-								            d.source.y + "L" + 
-								            mx + "," + my  + "L" +
-								            d.target.x + "," + 
-								            d.target.y;
-								    });
+					    	link.attr("d", function(d) {
 
+					    		var dist = Math.sqrt(Math.pow(d.target.x - d.source.x, 2) +  Math.pow(d.target.y - d.source.y, 2));
+					    		var r1 = nodeRadius(d.source), r2 = nodeRadius(d.target);
+					    		console.log('r1', r1,'r2',r2);
+					    		var factor = (dist + r1 - r2)/ (2 * dist);
 
+					    		//Calulate the point on the path half way along the visible section:
+						        var mx = d.source.x + (d.target.x - d.source.x ) * factor,
+						            my = d.source.y + (d.target.y - d.source.y) * factor;
+						          
+						        return "M" + 
+						            d.source.x + "," + 
+						            d.source.y + "L" + 
+						            mx + "," + my  + "L" +
+						            d.target.x + "," + 
+						            d.target.y;
+						    });
 						}); 
 					}	
 
@@ -546,6 +555,8 @@ directives.
 										//Set the intial position of the node to be the position of its parent:
 										newNode.x = clickedNode.x + rnd*50;
 										newNode.y = clickedNode.y + rnd*50;
+
+										if(newNode.in[0].prev_out.hash == 0) newNode.source = true;
 										//console.log('newnode x : ',newNode.x);
 
 										graph.nodes.push(newNode);

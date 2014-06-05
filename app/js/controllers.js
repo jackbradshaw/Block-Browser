@@ -5,7 +5,7 @@
 var controllers = angular.module('blockBrowser.controllers', []);
 
 controllers
-  .controller('BlockDetail', ['$scope', '$routeParams' ,'Blocks', function($scope, $routeParams, Blocks) {	
+  .controller('BlockDetail', ['$scope', '$routeParams', '$location' ,'Blocks', function($scope, $routeParams, $location, Blocks) {	
 	
   	var block = Blocks.block($routeParams.block_hash);
 
@@ -17,6 +17,11 @@ controllers
 		//block not found 
 		function(reason) { $scope.blockNotFound = true }
 	);
+
+	$scope.visualiseButtonClick = function(transactionHash)
+	{
+		$location.path('/transaction/' + transactionHash);		
+	}
 	
 	console.log(block);	
   }])
