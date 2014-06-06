@@ -532,17 +532,19 @@ directives.
 								otherOutputTotal += parseFloat(out.value);												
 							}
 						});
+						if(otherOutputTotal > 0)
+						{
+							console.log('otherOutputTotal',otherOutputTotal);						
 
-						console.log('otherOutputTotal',otherOutputTotal);						
+							var outNode = { hash: danglingOutKey(node), danglingOut : true, value : otherOutputTotal };
 
-						var outNode = { hash: danglingOutKey(node), danglingOut : true, value : otherOutputTotal };
+							//Stores how many unbound transcations there are
+							outNode.numberOfOutputs = node.out.length;
+							if(exculdedIndex) --outNode.numberOfOutputs;
 
-						//Stores how many unbound transcations there are
-						outNode.numberOfOutputs = node.out.length;
-						if(exculdedIndex) --outNode.numberOfOutputs;
-
-						graph.nodes.push(outNode);
-						graph.links.push({ "source": node, "target": outNode, "weight" : otherOutputTotal });
+							graph.nodes.push(outNode);
+							graph.links.push({ "source": node, "target": outNode, "weight" : otherOutputTotal });
+						}
 					}
 
 					function doubleClick(d)

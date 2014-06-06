@@ -2,8 +2,8 @@
 <div class="row" ng-if="blockNotFound">
 	<div class="alert alert-danger">Block not found.</div>
 </div>
-
-	<div class="row" ng-if="block != null">
+<div ng-if="!blockNotFound">
+	<div class="row" >
         <div class="col-md-12">	
 			<div class="panel panel-primary">
 			  <!-- Default panel contents -->
@@ -15,7 +15,7 @@
 		</ul></div>		  
 
 			  <!-- List group -->
-			  <ul class="list-group">				
+			  <ul class="list-group" ng-if="block != null">				
 				<li class="list-group-item"><strong>Hash:</strong> {{block.hash}}</li>
 				<li class="list-group-item"><strong>Previous block: </strong><a ng-if="block.prev_block != 0" href="#/block/{{block.prev_block}}">{{block.prev_block}}</a></li>
 				<li class="list-group-item"><strong>Time: </strong>{{block.time}}</li>
@@ -24,16 +24,21 @@
 				<li class="list-group-item"><strong>Merkle root:</strong> {{block.mrkl_root}}</li>
 				<li class="list-group-item"><strong>Nonce: </strong>{{block.nonce}}</li>
 			  </ul>
+			  <div ng-if="block == null" class="spinner">
+				<div class="dot"></div>
+			  </div>
 		    </div>
 		  </div>		 
 		</div>
 		
-		<div class="row" ng-if="block != null">
+		<div class="row" >
 			<div class="col-md-12">	
 			<div class="panel panel-primary">
 			<div class="panel-heading text-center"><span class="h3">Transactions ({{block.n_tx}})</span></div>	  
-
-				<div class="panel-group transactions-panel-group" id="accordion">
+				<div ng-if="block == null" class="spinner">
+				<div class="dot"></div>
+			  </div>
+				<div ng-if="block != null" class="panel-group transactions-panel-group" id="accordion">
 				  <div class="panel panel-default" ng-repeat="transaction in block.tx">
 					<div class="panel-heading">
 					  <h4 class="panel-title">
@@ -93,4 +98,5 @@
 		</div>
 		</div>	
 		</div>	 
+		</div>
 		</div>	 

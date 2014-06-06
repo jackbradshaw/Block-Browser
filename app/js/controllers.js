@@ -25,8 +25,9 @@ controllers
 	
 	console.log(block);	
   }])
-  .controller('BlockList', ['$scope','$routeParams', 'Blocks', function($scope, $routeParams, Blocks) {				
-		
+  .controller('BlockList', ['$scope','$routeParams', 'Blocks', function($scope, $routeParams, Blocks) {		
+
+  		
 		if($routeParams.block_hash)	
 			var promise = Blocks.blockChain(10, $routeParams.block_hash);
 		else

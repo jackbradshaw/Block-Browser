@@ -1,18 +1,20 @@
 
  
-<div class="row" ng-if="blocks.length == 0">
+<div class="row" ng-if="blocks != null && blocks.length == 0">
 	<div class="alert alert-danger">Could not get block chain.</div>
 </div>
 
-      <div class="row" ng-if="blocks != null && blocks.length > 0">
+      <div ng-if="blocks == null || (blocks != null && !blocks.length == 0)" class="row" >
         <div class="col-md-12">	
-<div class="panel panel-primary">
+			<div class="panel panel-primary">
 			  <!-- Default panel contents -->
 			  <div class="panel-heading">
 			  <ul class="pager">
 			<li class="previous"><a href="#/{{blocks.slice(-1)[0].prev_block}}">&larr; Older</a></li>
 			<li class="h3">Block Chain</li>
-		    <li class="next"><a href="#/{{tomorrow}}">Newer &rarr;</a></li>
+			<!--
+		    	<li class="next"><a href="#/{{next_page_block_hash}}">Newer &rarr;</a></li>
+			-->
 		</ul>
 		<form role="form">  
 			  <!--<div class="input-group">
@@ -23,7 +25,7 @@
 			</div>-->
 			</form>	
 		</div>		
-		<table class="table table-hover">
+		<table ng-if="blocks != null && blocks.length > 0" class="table table-hover">
 			<thead>
 				<tr>					
 					<th>Hash</th>
@@ -37,6 +39,9 @@
 				</tr>	
 			</tbody>
 		</table>
+		<div ng-if="blocks == null" class="spinner">
+			<div class="dot"></div>
+		</div>
         </div>
       </div>
 	</div>
