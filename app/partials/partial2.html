@@ -5,14 +5,15 @@
 <div ng-if="!blockNotFound">
 	<div class="row" >
         <div class="col-md-12">	
-			<div class="panel panel-primary">
+			<div class="panel panel-primary block-info-panel">
 			  <!-- Default panel contents -->
-			  <div class="panel-heading">
-			  <ul class="pager">
-			<li ng-if="block.prev_block != 0" class="previous"><a href="#/block/{{block.prev_block}}">&larr; Previous Block</a></li>
-			<li class="h3">Block Information</li>
-		    <!--<li class="next"><a href="#">Next Block &rarr;</a></li>-->
-		</ul></div>		  
+			<div class="panel-heading">
+			 	 <ul class="pager">
+				<li ng-if="block.prev_block != 0" class="previous"><a href="#/block/{{block.prev_block}}">&larr; Previous Block</a></li>
+				<li class="h3">Block Information</li>
+		    	<!--<li class="next"><a href="#">Next Block &rarr;</a></li>-->
+				</ul>
+			</div>		  
 
 			  <!-- List group -->
 			  <ul class="list-group" ng-if="block != null">				
@@ -21,23 +22,39 @@
 				<li class="list-group-item"><strong>Time: </strong>{{block.time}}</li>
 				<li class="list-group-item"><strong>Transactions:</strong> {{block.n_tx}}</li>				
 				<li class="list-group-item"><strong>Size: </strong>{{block.size}}</li>
-				<li class="list-group-item"><strong>Merkle root:</strong> {{block.mrkl_root}}</li>
+				<li class="list-group-item">
+					<strong>Merkle root:</strong> {{block.mrkl_root}} 
+					<button  type="button" class="btn btn-default right" ng-click="verifyButtonClick()">Verify</button>
+					<div ng-if="verificationResult.success && verificationResult.result" class="alert alert-success alert-dismissable merkle-root-alert">
+  						<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+  						Merkle Root Correct!
+					</div>
+					<div ng-if="verificationResult.success && !verificationResult.result" class="alert alert-danger alert-dismissable merkle-root-alert">
+  						<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+  						Merkle Root Incorrect!
+					</div>
+					<div ng-if="verificationResult != null &&!verificationResult.success" class="alert alert-warning alert-dismissable merkle-root-alert">
+  						<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+  						Could not verify block.
+					</div>
+				</li>
 				<li class="list-group-item"><strong>Nonce: </strong>{{block.nonce}}</li>
+				
 			  </ul>
-			  <div ng-if="block == null" class="spinner">
-				<div class="dot"></div>
-			  </div>
+			  
+				<spinner ng-show="block == null"></spinner>
+			  
 		    </div>
 		  </div>		 
 		</div>
 		
 		<div class="row" >
 			<div class="col-md-12">	
-			<div class="panel panel-primary">
+			<div class="panel panel-primary transaction-panel">
 			<div class="panel-heading text-center"><span class="h3">Transactions ({{block.n_tx}})</span></div>	  
-				<div ng-if="block == null" class="spinner">
-				<div class="dot"></div>
-			  </div>
+				<!--<spinner ng-show="block == null"></spinner>-->
+				
+			 
 				<div ng-if="block != null" class="panel-group transactions-panel-group" id="accordion">
 				  <div class="panel panel-default" ng-repeat="transaction in block.tx">
 					<div class="panel-heading">

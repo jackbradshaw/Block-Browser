@@ -7,6 +7,8 @@ var testId = '000000000000000063be697bdeaa662587226ca7648aeed64a324d7cef936ccd';
 
 helpers.getBlock(testId, display);
 
+exports.verifyBlock = verifyBlock;
+
 /**
  * Callback for getBlock. Prints information about block to screen.
  **/
@@ -20,21 +22,24 @@ function display(block)
 	
 	tree.merkleTree.forEach(function(buffer)
 	{
-		console.log(getBufferHexBE(buffer));;
+		console.log(helpers.getBufferHexBE(buffer));;
 	});
 	
 	console.log(']');	
 	
-	if(getBufferHexBE(tree.merkleRoot) == block.mrkl_root) console.log('Merkle Root correct.');
+	if(helpers.getBufferHexBE(tree.merkleRoot) == block.mrkl_root) console.log('Merkle Root correct.');
 	
+	var blockValid = verifyBlock(block);
+	
+	if(blockValid) console.log('Hash correct.');	
+}
+
+function verifyBlock(block)
+{
 	var blockHash = computeBlockHash(block);
-	var blockHashHex = getBufferHexBE(blockHash);
+	var blockHashHex = helpers.getBufferHexBE(blockHash);
 	console.log('Hash: ' + blockHashHex);
-	if(blockHashHex == block.hash) console.log('Hash correct.');	
-	
-	function getBufferHexBE(buffer){
-		return helpers.swapBufferEndian(buffer).toString('hex');
-	}
+	return blockHashHex == block.hash;
 }
 
 /**

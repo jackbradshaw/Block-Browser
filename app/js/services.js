@@ -11,12 +11,14 @@ blockBrowserServices.factory('Blocks', ['$resource', '$http', '$q',
 	return new BlockService();
 	
 	function BlockService()
-	{
-		
-			// this.resource =  $resource('/rawblock/:block_hash', {}, {		  
-			//   query: {method:'GET', url:'/blocks/:time_in_milliseconds?format=json&cors=true'}
-			// });	
-
+	{	
+			/**
+			* Verifies the block
+			**/
+			this.verify = function(block)
+			{
+				return $http.post('/verifyBlock/', block);
+			}
 
 			/**
 			* Calucaltes the merkle tree for the block on the server
@@ -40,19 +42,17 @@ blockBrowserServices.factory('Blocks', ['$resource', '$http', '$q',
 						function(result) { return result.data; },
 						function(reason) { return searchTerm; } );
 				}
-
 			}
 
 			this.block = function(blockHash)
 			{
 				return $http({method:'GET', url: '/rawblock/' + blockHash}).then(null, blockNotFound);				
-			}
-
-			function blockNotFound()
-			{
-				throw new Error('Block not found.');
-			}
-
+			
+				function blockNotFound()
+				{
+					throw new Error('Block not found.');
+				}
+			}			
 			
 			this.blockChain = function(blocksToGet, startingBlockHash)
 			{	
@@ -71,61 +71,60 @@ blockBrowserServices.factory('Blocks', ['$resource', '$http', '$q',
 				}
 				
 				promise = promise.then(function(result) { 						
-							return {
-								nextHash: result.data,
-								blocks: [],
-								retry: startAtLatestBlock
-							};
-						}					
-					);	
+					return {
+						nextHash: result.data,
+						blocks: [],
+						retry: startAtLatestBlock
+					};
+				});	
 				
-					for (var i = 0; i < blocksToGet; i++) 
-					{
-						promise = promise.then(function(obj)    
-						{ 					
-							console.log('obj: ' + obj);
-							return $http({method:'GET', url: '/rawblock/' + obj.nextHash})
-								.then(function(result) {
-									obj.blocks.push(result.data);
-									obj.nextHash = result.data.prev_block;								
-									return obj;
-								},
-								//Fail
-								function(reason)
-								{										
-									if(reason.status == 404 && obj.retry)
-									{						
-										obj.retry = false;								
-										console.log('404');
-										
-										//return $q.when(100000000000000)
-										return $http({method:'GET', url: '/q/getblockcount'})
-										.then(function(result) {
-											var height = result.data;
-											return getHeadOfChain(height - 1, 3);
-										});
-									}
-									else
-									{
-										throw new Error('Could not complete block chain.');
-									}								
+				for (var i = 0; i < blocksToGet; i++) 
+				{
+					promise = promise.then(function(obj)    
+					{ 					
+						console.log('obj: ' + obj);
+						return $http({method:'GET', url: '/rawblock/' + obj.nextHash})
+							.then(function(result) {
+								obj.blocks.push(result.data);
+								obj.nextHash = result.data.prev_block;								
+								return obj;
+							},
+							//Fail
+							function(reason)
+							{										
+								if(reason.status == 404 && obj.retry)
+								{						
+									obj.retry = false;								
+									console.log('404');
+									
+									//return $q.when(100000000000000)
+									return $http({method:'GET', url: '/q/getblockcount'})
+									.then(function(result) {
+										var height = result.data;
+										return getHeadOfChain(height - 1, 3);
+									});
 								}
-							);
-						}						
-					); 
+								else
+								{
+									throw new Error('Could not complete block chain.');
+								}								
+							}
+						);
+					}); 
 				}
 		
-			return promise.then(
-				//Success		
-				function(obj) {
-					return obj.blocks;
-				},
-				//Failure
-				function(reason) {
-					console.log('fail');
-					return $q.when([]); 
-				}
-			);
+				return promise.then
+				(
+					//Success		
+					function(obj) {
+						return obj.blocks;
+					},
+					//Failure
+					function(reason) {
+						console.log('fail');
+						return $q.when([]); 
+					}
+				);
 
 
 			function getHeadOfChain(height, retries)

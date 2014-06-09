@@ -12,7 +12,15 @@ directives.
     };
   }]);
 
-
+directives.
+	directive('spinner',function()
+	{
+		 return {
+		    restrict: 'E',		   
+		    templateUrl: 'partials/spinner.html'
+		};
+	});
+	
 directives.
 	directive('ghVisualization', function () {
 
@@ -242,6 +250,7 @@ directives.
 
 				svg.attr("id", "playgraph")
 					.attr("height", '100%')
+					.attr("width", '100%')
 	             	//better to keep the viewBox dimensions with variables
 	            	.attr("viewBox", "0 0 " + width + " " + height )
 	            	.attr("preserveAspectRatio", "xMidYMid meet")

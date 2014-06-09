@@ -4,6 +4,7 @@ var proxyServer = require('http-route-proxy');
 var rest = require('connect-rest');
 
 var merkleTree = require('./merkleTree');
+var task1 = require('./Task1');
 
 var url = require('url');
 var proxy = require('proxy-middleware');
@@ -33,6 +34,15 @@ var app = connect()
 		var tree = merkleTree.tree(block);
 
 		return { tree : tree };
+	}
+
+	//Rest service to Verify Merkle Root
+	rest.post('/verifyBlock/', verifyBlock);
+
+	function verifyBlock(request, content)
+	{
+		var block = content;
+		return task1.verifyBlock(block);
 	}
 
 http.createServer(app).listen(9000);

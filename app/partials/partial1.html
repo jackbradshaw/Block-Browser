@@ -6,7 +6,7 @@
 
       <div ng-if="blocks == null || (blocks != null && !blocks.length == 0)" class="row" >
         <div class="col-md-12">	
-			<div class="panel panel-primary">
+			<div class="panel panel-primary block-chain-panel" ng-class="{loading: loading}">
 			  <!-- Default panel contents -->
 			  <div class="panel-heading">
 			  <ul class="pager">
@@ -39,9 +39,12 @@
 				</tr>	
 			</tbody>
 		</table>
+<!--
 		<div ng-if="blocks == null" class="spinner">
 			<div class="dot"></div>
-		</div>
+		</div>-->
+
+		<spinner ng-show="blocks == null"></spinner>
         </div>
       </div>
 	</div>
