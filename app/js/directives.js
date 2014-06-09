@@ -38,7 +38,7 @@ directives.
 		    },  
 			link: function (scope, element, attrs) {
 
-				$scope.displayInfo = false;
+				scope.displayInfo = false;
 
 				var m = [20, 120, 20, 120],
 				    w = 1280 - m[1] - m[3],

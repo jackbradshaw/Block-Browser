@@ -217,3 +217,70 @@ blockBrowserServices.factory('Transactions', ['$resource', '$http', '$q',
 			}
 		}
 	}]);
+
+
+
+blockBrowserServices.factory('BlockCache', function()
+{
+	//The service objec tot be returned
+	var blockCache = {};
+
+	//The object to store the block representations, indexed by previous hash:
+	var cachePrevIndex = {};
+	var cacheHashIndex = {};
+
+
+	blockCache.add = function(block)
+	{
+		//See if a node with this block as its previous block exists
+		var existingNode = cachePrevIndex[block.hash];
+		
+		//Add a new node to the cache, with the existing node as its next node:
+		var newNode = addToCache(block, existingNode);
+
+		//Now try to connect any unattached head blocks:
+		var unattachedNode = cacheHashIndex[block.prev_block];
+		if(unattachedNode != null)
+		{
+			unattachedNode.next = newNode;
+		}				
+	}
+
+	blockCache.getNextBlockHash = function(blockHash)
+	{
+		var node = cacheHashIndex[blockHash];
+		console.log('node', node);
+		if(node != null && node.next != null)
+			return node.next.hash;
+		return null;
+	}
+
+	blockCache.display = function()
+	{
+		console.log('cache', cacheHashIndex);
+	}
+
+	function BlockNode(block, nextNode)
+	{
+		this.hash = block.hash;
+		this.next = nextNode;
+		//this.prevBlock = block.prev_block;
+	}
+
+	function addToCache(block, nextNode)
+	{
+		var newNode = new BlockNode(block, nextNode); 
+
+		if(cachePrevIndex[block.prev_block] == null)
+			cachePrevIndex[block.prev_block] = newNode;
+
+		if(cacheHashIndex[block.hash] == null)
+			cacheHashIndex[block.hash] = newNode;
+
+		return newNode;
+	}
+
+	//Return the Service:
+	return blockCache;
+
+});

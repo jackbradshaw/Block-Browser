@@ -5,9 +5,11 @@
 var controllers = angular.module('blockBrowser.controllers', []);
 
 controllers
-  .controller('BlockDetail', ['$scope', '$routeParams', '$location' ,'Blocks', function($scope, $routeParams, $location, Blocks) {	
+  .controller('BlockDetail', ['$scope', '$routeParams', '$location' ,'Blocks', 'BlockCache', function($scope, $routeParams, $location, Blocks, BlockCache) {	
 	
-  	getBlock($routeParams.block_hash);
+  	var blockHash = $routeParams.block_hash;
+
+  	getBlock(blockHash);
 	
 	$scope.visualiseButtonClick = function(transactionHash)
 	{
@@ -45,7 +47,13 @@ controllers
 
 		block.then( 
 			//block found
-			function(result) { console.log('block', result); $scope.block =  result.data; },
+			function(result) { 
+				console.log('block', result); 
+				$scope.block =  result.data;
+				BlockCache.add(result.data);
+				BlockCache.display();
+  				$scope.next_block = BlockCache.getNextBlockHash(blockHash);
+			},
 			//block not found 
 			function(reason) { $scope.blockNotFound = true }
 		).finally(function() { $scope.loading = false;})
@@ -58,7 +66,7 @@ controllers
 	}	
 }]);
 
-controllers.controller('BlockList', ['$scope','$routeParams', 'Blocks', function($scope, $routeParams, Blocks) {		
+controllers.controller('BlockList', ['$scope', 'BlockCache', '$routeParams', 'Blocks', function($scope, BlockCache, $routeParams, Blocks) {		
 
 	$scope.loading = true;
 	if($routeParams.block_hash)	
@@ -66,7 +74,23 @@ controllers.controller('BlockList', ['$scope','$routeParams', 'Blocks', function
 	else
 		promise =  Blocks.blockChain(10);			
 	
-	promise.then(function(result) { console.log(result); $scope.blocks =  result; }).finally(function() { $scope.loading = false;});	
+	promise.then(
+		function(result) 
+		{ 
+			console.log(result); 			
+
+			$scope.blocks = result; 
+
+			//Add Blocks to cache:
+			result.forEach(function(block)
+			{
+				BlockCache.add(block);
+			})
+
+			BlockCache.display();
+		}
+	).finally(function() { $scope.loading = false;});	
+	
 	
  }]);
 

@@ -8,10 +8,13 @@
 			<div class="panel panel-primary block-info-panel">
 			  <!-- Default panel contents -->
 			<div class="panel-heading">
-			 	 <ul class="pager">
-				<li ng-if="block.prev_block != 0" class="previous"><a href="#/block/{{block.prev_block}}">&larr; Previous Block</a></li>
-				<li class="h3">Block Information</li>
-		    	<!--<li class="next"><a href="#">Next Block &rarr;</a></li>-->
+			 	<ul class="pager">
+					<li ng-if="block.prev_block != 0" class="previous"><a href="#/block/{{block.prev_block}}">&larr; Previous Block</a></li>
+					<li class="h3">Block Information</li>
+			    	<li ng-class="{disabled: next_block == null}" class="next">
+			    		<a ng-show="next_block != null" href="#/block/{{next_block}}">Next Block &rarr;</a>
+			    		<a ng-show="next_block == null">Next Block &rarr;</a>
+			    	</li>
 				</ul>
 			</div>		  
 
